@@ -19,8 +19,8 @@ app.post('/send-email', async (req, res) => {
     try {
         await transporter.sendMail({
             from: email,
-            to: 'anuktsksanurag@gmail.com',
-            subject: 'New Contact Form Submission',
+            to: 'kushagratripathi11@gmail.com',
+            subject: 'Enquiry for SpeedyWings',
             text: `Name: ${name}\nEmail: ${email}\nMessage: ${message}`,
         });
         res.json({ success: true, message: 'Email sent successfully' });
