@@ -1,57 +1,32 @@
 const express = require('express');
-const http = require('http');
-const WebSocket = require('ws');
+const nodemailer = require('nodemailer');
+const cors = require('cors');
 
-// Initialize Express app
 const app = express();
-const PORT = process.env.PORT || 3000;
-
-// Initialize HTTP server and WebSocket server
-const server = http.createServer(app);
-const wss = new WebSocket.Server({ server });
-
-// Middleware to parse JSON
 app.use(express.json());
+app.use(cors());
 
-// Test API endpoint
-app.get('/', (req, res) => {
-  res.send('WebSocket Notification Server is running');
-});
-
-// Store connected WebSocket clients
-let clients = [];
-
-// Handle WebSocket connection
-wss.on('connection', (ws) => {
-  // Add client to the list
-  clients.push(ws);
-  console.log('New client connected');
-  
-  // Remove client from list on disconnect
-  ws.on('close', () => {
-    clients = clients.filter(client => client !== ws);
-    console.log('Client disconnected');
-  });
-});
-
-// Endpoint to send notification
-app.post('/send-notification', (req, res) => {
-  const { message } = req.body;
-  if (!message) {
-    return res.status(400).json({ error: 'Message is required' });
-  }
-
-  // Send message to all connected clients
-  clients.forEach((client) => {
-    if (client.readyState === WebSocket.OPEN) {
-      client.send(JSON.stringify({ message }));
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: 'anuktsksanurag@gmail.com',
+        pass: 'uuwb hpug caoj zbln', 
     }
-  });
-
-  res.json({ success: true, message: 'Notification sent to all clients' });
 });
 
-// Start server
-server.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+app.post('/send-email', async (req, res) => {
+    const { name, email, message } = req.body;
+    try {
+        await transporter.sendMail({
+            from: email,
+            to: 'anuktsksanurag@gmail.com',
+            subject: 'New Contact Form Submission',
+            text: `Name: ${name}\nEmail: ${email}\nMessage: ${message}`,
+        });
+        res.json({ success: true, message: 'Email sent successfully' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
 });
+
+app.listen(4000, () => console.log('Server running on port 5000'));
